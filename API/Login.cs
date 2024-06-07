@@ -4,14 +4,14 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 
-namespace Todo_List_ASPNETCore.Controllers
+namespace Todo_List_ASPNETCore.API
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class LoginController : ControllerBase
+    public class Login : ControllerBase
     {
         private IConfiguration _config;
-        public LoginController(IConfiguration config)
+        public Login(IConfiguration config)
         {
             _config = config;
         }

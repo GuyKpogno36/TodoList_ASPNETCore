@@ -1,160 +1,134 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
+using System.Text;
+using Todo_List_ASPNETCore.API;
 using Todo_List_ASPNETCore.DAL;
 using Todo_List_ASPNETCore.Models;
+using Todo_List_ASPNETCore.Services;
 
 namespace Todo_List_ASPNETCore.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class TaskController : ControllerBase
+    public class TaskController : Controller
     {
+        private readonly TaskService _taskApiService;
         private TodoListContext contexteEF = new(new DbContextOptions<TodoListContext>());
 
-        [HttpGet]
-        public IActionResult GetAllTasks()
+        public TaskController(TaskService taskApiService)
         {
-            var tasks = contexteEF.TASK.Include(t => t.Category).ToList();
-            return Ok(tasks);
+            _taskApiService = taskApiService;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            var tasks = await _taskApiService.GetTasksAsync();
+            var tasks_model = new TaskModel{
+                Tasks = tasks,
+                Categories = contexteEF.CATEGORY.ToList()
+        };
+            return View(tasks_model);
+        }
+
+        public async Task<JsonResult> Details(int id)
+        {
+            var task = await _taskApiService.GetTaskByIdAsync(id);
+            return Json(task);
         }
 
         [HttpPost]
-        public IActionResult CreateTask([FromBody] TaskModel task)
+        public async Task<IActionResult> Create(TaskModel task)
         {
-            // Logique pour ajouter la tâche à la base de données
             contexteEF.TASK.Add(new TASK
             {
-                Task_Title = task.Titre,
+                Task_Title = task.Title,
                 Task_Desc = task.Description,
-                Task_Deadline = task.DateEcheance,
-                Task_Priority = task.Priorite,
-                Task_Status = task.EstTerminee
+                Task_Deadline = task.Deadline,
+                Task_Priority = task.Priority,
+                Task_Status = task.status,
+                Category_ID = task.Categorie
             });
             contexteEF.SaveChanges();
-            // Retournez une réponse appropriée, par exemple un code de statut HTTP 201 (Créé)
-            return CreatedAtAction(nameof(GetTaskById), new { id = task.Id }, task);
+
+            task.Tasks = await _taskApiService.GetTasksAsync();
+            task.Categories = contexteEF.CATEGORY.ToList();
+            return View(nameof(Index), task);
         }
 
-        [HttpPut("{id}")]
-        public IActionResult UpdateTask(int id, [FromBody] TaskModel updatedTask)
+        /*[HttpPost]
+        public async Task<IActionResult> Create(TaskModel task)
         {
-            // Logique pour mettre à jour la tâche dans la base de données
+            var jsonString = "{" +
+                    "\"Title\":" + task.Title + "," +
+                    "\"Description\":" + task.Description + "," +
+                    "\"Deadline\":" + task.Deadline + "," +
+                    "\"Priority\":" + task.Priority + "," +
+                    "\"status\":" + task.status + "," +
+                "}";
+            var httpContent = new StringContent(jsonString, Encoding.UTF8, "application/json");
+
+            var response = await _taskApiService.CreateTaskAsync(httpContent);
+            if (response.IsSuccessStatusCode)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+            task.Tasks = await _taskApiService.GetTasksAsync();
+            return View(nameof(Index), task);
+        }*/
+
+        public async Task<IActionResult> Select(int id)
+        {
+            var task = await _taskApiService.GetTaskByIdAsync(id);
+            return View(task);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(int id, TaskModel updatedTask)
+        {
             if (updatedTask == null || updatedTask.Id != id) return BadRequest("Invalid task data");
-            
+
             var task = contexteEF.TASK.Find(id);
             if (task == null) return NotFound("Task not found");
-            
-            task.Task_Title = updatedTask.Titre;
+
+            task.Task_Title = updatedTask.Title;
             task.Task_Desc = updatedTask.Description;
-            task.Task_Deadline = updatedTask.DateEcheance;
-            task.Task_Priority = updatedTask.Priorite;
-            task.Task_Status = updatedTask.EstTerminee;
+            task.Task_Deadline = updatedTask.Deadline;
+            task.Task_Priority = updatedTask.Priority;
+            task.Task_Status = updatedTask.status;
             task.Category_ID = updatedTask.Categorie;
 
             contexteEF.TASK.Update(task);
             contexteEF.SaveChanges();
 
-            // Retournez une réponse appropriée, par exemple un code de statut HTTP 200 (OK)
-            return Ok("Task updated successfully");
+            updatedTask.Tasks = await _taskApiService.GetTasksAsync();
+            updatedTask.Categories = contexteEF.CATEGORY.ToList();
+            return View(nameof(Index), task);
         }
-
-        [HttpDelete("{id}")]
-        public IActionResult DeleteTask(int id)
+        
+        /*[HttpPost]
+        public async Task<IActionResult> Edit(int id, TaskModel task)
         {
-            // Logique pour supprimer la tâche de la base de données
-            contexteEF.Remove(contexteEF.TASK.Single(p => p.Task_ID == id));
-            contexteEF.SaveChanges();
-            // Retournez une réponse appropriée, par exemple un code de statut HTTP 204 (Pas de contenu)
-            return Ok("Task deleted successfully");
-        }
-
-        [HttpPut("{id}/complete")]
-        public IActionResult MarkTaskAsCompleted(int id)
-        {
-            // Logique pour marquer la tâche comme complétée dans la base de données
-            var task = contexteEF.TASK.Find(id);
-            if (task == null) return NotFound("Task not found");
-            
-            task.Task_Status = true;
-            contexteEF.SaveChanges();
-            // Retournez une réponse appropriée, par exemple un code de statut HTTP 200 (OK)
-            return Ok("Task closed successfully");
-        }
-
-        [HttpGet("{id}")]
-        public IActionResult GetTaskById(int id)
-        {
-            var task = contexteEF.TASK.Include(t => t.Category).FirstOrDefault(t => t.Task_ID == id);
-            if (task == null)  return NotFound();
-           
-            return Ok(task);
-        }
-
-        [HttpGet("completed")]
-        public IActionResult GetCompletedTasks()
-        {
-            var tasks = contexteEF.TASK.Include(t => t.Category)
-                                      .Where(t => t.Task_Status)
-                                      .ToList();
-            return Ok(tasks);
-        }
-
-        [HttpGet("overdue")]
-        public IActionResult GetOverdueTasks()
-        {
-            var tasks = contexteEF.TASK.Include(t => t.Category)
-                                      .Where(t => !t.Task_Status && t.Task_Deadline < DateTime.Now)
-                                      .ToList();
-            return Ok(tasks);
-        }
-
-        [HttpGet("filter")]
-        public IActionResult FilterTasks(string category = null, TaskPriority? priority = null, bool? isCompleted = null)
-        {
-            var query = contexteEF.TASK.Include(t => t.Category).AsQueryable();
-
-            if (!string.IsNullOrEmpty(category))
+            var response = await _taskApiService.UpdateTaskAsync(id, task);
+            if (response.IsSuccessStatusCode)
             {
-                query = query.Where(t => t.Category.Category_Name == category);
+                return RedirectToAction(nameof(Index));
             }
+            return View(task);
+        }*/
 
-            if (priority.HasValue)
-            {
-                query = query.Where(t => t.Task_Priority == priority.Value);
-            }
-
-            if (isCompleted.HasValue)
-            {
-                query = query.Where(t => t.Task_Status == isCompleted.Value);
-            }
-
-            var tasks = query.ToList();
-            return Ok(tasks);
-        }
-
-        [HttpGet("sort")]
-        public IActionResult SortTasks(string sortBy, bool ascending = true)
+        public async Task<IActionResult> Delete(int id)
         {
-            var query = contexteEF.TASK.Include(t => t.Category).AsQueryable();
-
-            switch (sortBy.ToLower())
-            {
-                case "Task_Deadline":
-                    query = ascending ? query.OrderBy(t => t.Task_Deadline) : query.OrderByDescending(t => t.Task_Deadline);
-                    break;
-                case "priority":
-                    query = ascending ? query.OrderBy(t => t.Task_Priority) : query.OrderByDescending(t => t.Task_Priority);
-                    break;
-                default:
-                    query = ascending ? query.OrderBy(t => t.Task_Title) : query.OrderByDescending(t => t.Task_Title);
-                    break;
-            }
-
-            var tasks = query.ToList();
-            return Ok(tasks);
+            var task = await _taskApiService.GetTaskByIdAsync(id);
+            return View(task);
         }
 
+        [HttpPost, ActionName("Delete")]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var response = await _taskApiService.DeleteTaskAsync(id);
+            if (response.IsSuccessStatusCode)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+            return View();
+        }
     }
 }

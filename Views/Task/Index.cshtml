@@ -1,0 +1,207 @@
+﻿@model Todo_List_ASPNETCore.Models.TaskModel
+
+@{
+    ViewData["Title"] = "Tasks";
+}
+
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<h2>Tasks</h2>
+
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createTaskModal">Create Task</button>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Deadline</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Task Category</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var task in Model.Tasks)
+        {
+            <tr>
+                <td>@task.Task_Title</td>
+                <td>@task.Task_Desc</td>
+                <td>@task.Task_Deadline</td>
+                <td>@task.Task_Priority</td>
+                <td>@task.Task_Status</td>
+                <td>@task.Category.Category_Name</td>
+                <td>
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#updateTaskModal" onclick="setTaskForUpdate('@task.Task_ID', '@task.Task_Title.Replace("'", "")', '@task.Task_Desc.Replace("'", "")', '@task.Task_Deadline', '@task.Task_Priority', '@task.Task_Status', '@task.Category.Category_Name')">
+                        <script>
+                            function setTaskForUpdate(taskId, title, description, deadline, priority, status, categoryName) {
+                                $('#updateTaskId').val(taskId);
+                                $('#updateTitle').val(title);
+                                $('#updateDescription').val(description);
+                                $('#updateDeadline').val(deadline);
+                                $('#updatePriority').val(priority);
+                                $('#updateStatus').val(status);
+                                $('#updateCategory').val(categoryName);
+                            }
+                        </script>
+                        Edit
+                    </button>
+                    @* <button type="button" class="btn btn-primary" onclick="setTaskForUpdate(@task.Task_ID, '@task.Task_Title', '@task.Task_Desc', '@task.Task_Deadline', '@task.Task_Priority', '@task.Task_Status')">Edit</button> *@
+                    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteTaskModal" onclick="setTaskForDelete()">
+                        <script>
+                            function setTaskForDelete() { $('#deleteTaskId').val('@task.Task_ID'); }
+                        </script>
+                        Delete
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Create Task Modal -->
+<div class="modal fade" id="createTaskModal" tabindex="-1" role="dialog" aria-labelledby="createTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createTaskModalLabel">Create Task</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="createTaskForm" method="post" action="/Task/Create">
+                    <div class="form-group">
+                        <label for="title">Title</label>
+                        <input type="text" class="form-control" id="title" name="Title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <input type="text" class="form-control" id="description" name="Description" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="deadline">Deadline</label>
+                        <input type="datetime-local" class="form-control" id="deadline" name="Deadline" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="priority">Priority</label>
+                        <select class="form-control" id="priority" name="Priority" required>
+                            <option>Low</option>
+                            <option>Medium</option>
+                            <option>High</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="status">Status</label>
+                        <select class="form-control" id="status" name="Status" required>
+                            <option>Not Started</option>
+                            <option>In Progress</option>
+                            <option>Completed</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="categorie">Category</label>
+                        <select class="form-control" id="categorie" name="Categorie" required>
+                            @foreach (var category in Model.Categories)
+                            {
+                                <option value="@category.Category_ID">@category.Category_Name</option>
+                            }
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Update Task Modal -->
+<div class="modal fade" id="updateTaskModal" tabindex="-1" role="dialog" aria-labelledby="updateTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateTaskModalLabel">Update Task</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="updateTaskForm" method="post" action="/Task/Edit">
+                    <input type="hidden" id="updateTaskId" name="Id">
+                    <div class="form-group">
+                        <label for="updateTitle">Title</label>
+                        <input type="text" class="form-control" id="updateTitle" name="Title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="updateDescription">Description</label>
+                        <input type="text" class="form-control" id="updateDescription" name="Description" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="updateDeadline">Deadline</label>
+                        <input type="datetime-local" class="form-control" id="updateDeadline" name="Deadline" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="updatePriority">Priority</label>
+                        <select class="form-control" id="updatePriority" name="Priority" required>
+                            <option>Low</option>
+                            <option>Medium</option>
+                            <option>High</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="updateStatus">Status</label>
+                        <select class="form-control" id="updateStatus" name="Status" required>
+                            <option>Not Started</option>
+                            <option>In Progress</option>
+                            <option>Completed</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="updateCategory">Category</label>
+                        <select class="form-control" id="updateCategory" name="Categorie" required>
+                            @foreach (var category in Model.Categories)
+                            {
+                                <option value="@category.Category_ID">@category.Category_Name</option>
+                            }
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Task Modal -->
+<div class="modal fade" id="deleteTaskModal" tabindex="-1" role="dialog" aria-labelledby="deleteTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteTaskModalLabel">Delete Task</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="deleteTaskForm" method="post" action="/Task/Delete">
+                    <input type="hidden" id="deleteTaskId" name="Id">
+                    <p>Are you sure you want to delete this task?</p>
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function CreateTask() {
+            var ligne = $(e.target).closest('option');
+            var idElement = $(ligne).attr('data-id');
+            $('#categorie').val(idElement);
+        }
+    </script>
+}

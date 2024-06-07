@@ -4,17 +4,17 @@ using Microsoft.EntityFrameworkCore;
 using Todo_List_ASPNETCore.DAL;
 using Todo_List_ASPNETCore.Services;
 
-namespace Todo_List_ASPNETCore.Controllers
+namespace Todo_List_ASPNETCore.API
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class NotificationController : ControllerBase
+    public class Notification : ControllerBase
     {
         private readonly NotificationBackgroundService _notificationService;
         private readonly TodoListContext _context;
         private readonly EmailService _emailService;
 
-        public NotificationController(NotificationBackgroundService notificationService, TodoListContext context, EmailService emailService)
+        public Notification(NotificationBackgroundService notificationService, TodoListContext context, EmailService emailService)
         {
             _notificationService = notificationService;
             _context = context;

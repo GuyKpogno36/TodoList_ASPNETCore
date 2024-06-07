@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Todo_List_ASPNETCore.Controllers;
+using Todo_List_ASPNETCore.API;
 using Todo_List_ASPNETCore.DAL;
 
 namespace Todo_List_ASPNETCore.Services
@@ -15,21 +15,21 @@ namespace Todo_List_ASPNETCore.Services
             _emailService = emailService;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async System.Threading.Tasks.Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
             {
                 using (var scope = _serviceProvider.CreateScope())
                 {
-                    var notificationController = scope.ServiceProvider.GetRequiredService<NotificationController>();
+                    var notificationController = scope.ServiceProvider.GetRequiredService<Notification>();
                     await notificationController.SendNotifications(null);
                 }
 
-                await Task.Delay(TimeSpan.FromHours(1), stoppingToken); // Vérifie toutes les heures
+                await System.Threading.Tasks.Task.Delay(TimeSpan.FromHours(1), stoppingToken); // Vérifie toutes les heures
             }
         }
 
-        public async Task SendNotificationsAsync(string email, string subject, string message)
+        public async System.Threading.Tasks.Task SendNotificationsAsync(string email, string subject, string message)
         {
             _emailService.SendEmail(email, subject, message);
         }
