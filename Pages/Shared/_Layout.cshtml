@@ -4,9 +4,14 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Todo_List_ASPNETCore</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    @* <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Todo_List_ASPNETCore.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/Todo_List_ASPNETCore.styles.css" asp-append-version="true" /> *@
 </head>
 <body>
     <header>
@@ -23,13 +28,16 @@
                             <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Task" asp-action="GetAllTasks">Tasks</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="/Task">Tasks</a>
+                            @* <a class="nav-link text-dark" asp-controller="Task" asp-action="GetAllTasks">Tasks</a> *@
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-page="/dashboard">Dashboard</a>
+                            <a class="nav-link text-dark" asp-controller="Task" asp-action="Dashboard">Dashboard</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Notification" asp-action="SendNotifications">Notification manager</a>
+                            <button type="button" class="btn btn-link" style="color:rgba(var(--bs-dark-rgb), var(--bs-text-opacity)) !important" data-toggle="modal" data-target="#SendNotifModal">
+                                Notification manager
+                            </button>
                         </li>
                     </ul>
                 </div>
@@ -42,6 +50,27 @@
         </main>
     </div>
 
+    <!-- Email to which send Notification Modal -->
+    <div class="modal fade" id="SendNotifModal" tabindex="-1" role="dialog" aria-labelledby="SendNotifModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="SendNotifModalLabel">Send Notification</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="email">Recipient Email</label>
+                        <input type="email" class="form-control" id="email" placeholder="Enter recipient email" required>
+                    </div>
+                    <button class="btn btn-primary" onclick="sendNotifications()">Send Notifications</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <footer class="border-top footer text-muted">
         <div class="container">
             &copy; 2024 - Todo_List_ASPNETCore - <a asp-area="" asp-page="/Privacy">Privacy</a>
@@ -51,6 +80,29 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+        function sendNotifications() {
+            var email = $('#email').val();
+            if (!email) {
+                alert("Please enter an email address.");
+                return;
+            }
+
+            $.ajax({
+                url: '/api/notification/send-notifications',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(email),
+                success: function (response) {
+                    alert(response);
+                },
+                error: function (xhr, status, error) {
+                    alert("Error: " + error);
+                }
+            });
+        }
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

@@ -7,8 +7,8 @@ using Optivem.Framework.Core.Domain;
 using System;
 using System.Diagnostics;
 using System.Text;
-using Todo_List_ASPNETCore.Controllers;
 using Todo_List_ASPNETCore.DAL;
+using Todo_List_ASPNETCore.Models;
 using Todo_List_ASPNETCore.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -43,6 +43,11 @@ builder.Services.AddControllers();
 
 builder.Services.AddTransient<NotificationBackgroundService>();
 
+builder.Services.AddHttpClient<TaskService>(client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7111/"); // Mettez à jour l'URL de base selon votre configuration
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -61,10 +66,10 @@ if (!app.Environment.IsDevelopment())
     //create entity objects
     var task1 = new TASK()
     {
-        Task_Desc = "Faire un premier test",
-        Task_Title = "Test 1",
-        Task_Deadline = Convert.ToDateTime("16/05/2024"),
-        Task_Priority = "Haute",
+        Task_Desc = "Faire un second test",
+        Task_Title = "Test 2",
+        Task_Deadline = Convert.ToDateTime("06/06/2024"),
+        Task_Priority = TaskPriority.High,
         Task_Status = false,
         Category_ID = 1
     };
@@ -73,7 +78,7 @@ if (!app.Environment.IsDevelopment())
     {
         Category_Name = "Travail"
     };
-    
+
     //add entitiy to the context
     context.TASK.Add(task1);
     context.CATEGORY.Add(categ);
@@ -96,6 +101,13 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllerRoute(
+        name: "default",
+        pattern: "{controller=Home}/{action=Index}/{id?}");
+});
 
 app.MapRazorPages();
 app.MapControllers();

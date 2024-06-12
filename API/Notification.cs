@@ -4,17 +4,17 @@ using Microsoft.EntityFrameworkCore;
 using Todo_List_ASPNETCore.DAL;
 using Todo_List_ASPNETCore.Services;
 
-namespace Todo_List_ASPNETCore.Controllers
+namespace Todo_List_ASPNETCore.API
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class NotificationController : ControllerBase
+    public class Notification : ControllerBase
     {
         private readonly NotificationBackgroundService _notificationService;
         private readonly TodoListContext _context;
         private readonly EmailService _emailService;
 
-        public NotificationController(NotificationBackgroundService notificationService, TodoListContext context, EmailService emailService)
+        public Notification(NotificationBackgroundService notificationService, TodoListContext context, EmailService emailService)
         {
             _notificationService = notificationService;
             _context = context;
@@ -34,15 +34,17 @@ namespace Todo_List_ASPNETCore.Controllers
 
             foreach (var task in upcomingTasks)
             {
-                message = $"Reminder: Your task '{task.Task_Title}' is due on {task.Task_Deadline}.";
-                subject = "Upcoming Task Reminder";
+                message += $"Reminder: Your task '{task.Task_Title}' is due on {task.Task_Deadline}.\n";
+                subject += "Upcoming Task Reminder; ";
             }
 
             foreach (var task in overdueTasks)
             {
-                message = $"Reminder: Your task '{task.Task_Title}' is overdue since {task.Task_Deadline}.";
-                subject = "Overdue Task Reminder";
+                message += $"Reminder: Your task '{task.Task_Title}' is overdue since {task.Task_Deadline}.\n";
+                subject += "Overdue Task Reminder; ";
             }
+            subject = string.Join("; ", subject.Split(new[] { "; " }, StringSplitOptions.RemoveEmptyEntries).Distinct());
+
             await _notificationService.SendNotificationsAsync(UserEmail, subject, message);
             return Ok("Notifications sent.");
         }

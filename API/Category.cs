@@ -5,11 +5,11 @@ using System;
 using Todo_List_ASPNETCore.DAL;
 using Todo_List_ASPNETCore.Models;
 
-namespace Todo_List_ASPNETCore.Controllers
+namespace Todo_List_ASPNETCore.API
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CategoryController : ControllerBase
+    public class Category : ControllerBase
     {
         private readonly TodoListContext contexteEF;
 
@@ -33,7 +33,7 @@ namespace Todo_List_ASPNETCore.Controllers
         {
             var category = contexteEF.CATEGORY.FirstOrDefault(c => c.Category_ID == id);
             if (category == null) return NotFound();
-            
+
             return Ok(category);
         }
     }
