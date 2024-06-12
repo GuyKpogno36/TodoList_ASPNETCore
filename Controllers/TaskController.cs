@@ -130,5 +130,71 @@ namespace Todo_List_ASPNETCore.Controllers
             }
             return View();
         }
+
+        [HttpPost]
+        public async Task<IActionResult> MarkAsCompleted(int id)
+        {
+            var task = contexteEF.TASK.Find(id);
+            if (task == null) return NotFound("Task not found");
+
+            task.Task_Status = true;
+            contexteEF.SaveChanges();
+            
+            return View();
+        }
+
+        /*public async Task<IActionResult> Dashboard()
+        {
+            var tasks = await _taskApiService.GetTasksAsync();
+
+            var viewModel = new DashboardModel
+            {
+                PendingTasks = tasks.Where(t => t.Task_Status == false).ToList(),
+                CompletedTasks = tasks.Where(t => t.Task_Status == true).ToList(),
+                OverdueTasks = tasks.Where(t => t.Task_Deadline < DateTime.Now && t.Task_Status == false).ToList(),
+                Priorities = tasks.Select(t => t.Task_Priority).Distinct().ToList(),
+                Categories = tasks.Select(t => t.Category).Distinct().ToList()
+            };
+
+            return View(viewModel);
+        }*/
+
+        public async Task<IActionResult> Dashboard(string priority, string category, string sortOrder)
+        {
+            var tasks = await _taskApiService.GetTasksAsync();
+
+            if (!string.IsNullOrEmpty(priority))
+            {
+                tasks = tasks.Where(t => t.Task_Priority.ToString() == priority).ToList();
+            }
+
+            if (!string.IsNullOrEmpty(category))
+            {
+                tasks = tasks.Where(t => t.Category.Category_ID.ToString() == category).ToList();
+            }
+
+            switch (sortOrder)
+            {
+                case "deadline":
+                    tasks = tasks.OrderBy(t => t.Task_Deadline).ToList();
+                    break;
+                case "priority":
+                    tasks = tasks.OrderBy(t => t.Task_Priority).ToList();
+                    break;
+            }
+
+            var viewModel = new DashboardModel
+            {
+                PendingTasks = tasks.Where(t => !t.Task_Status).ToList(),
+                CompletedTasks = tasks.Where(t => t.Task_Status).ToList(),
+                OverdueTasks = tasks.Where(t => t.Task_Deadline < DateTime.Now && !t.Task_Status).ToList(),
+                Priorities = tasks.Select(t => t.Task_Priority).Distinct().ToList(),
+                Categories = tasks.Select(t => t.Category).Distinct().ToList()
+            };
+
+            return View(viewModel);
+        }
+
+
     }
 }

@@ -27,6 +27,8 @@
     <tbody>
         @foreach (var task in Model.Tasks)
         {
+            string completion_marker = "";
+            if (task.Task_Status == true) completion_marker = "disabled";
             <tr>
                 <td>@task.Task_Title</td>
                 <td>@task.Task_Desc</td>
@@ -35,7 +37,7 @@
                 <td>@task.Task_Status</td>
                 <td>@task.Category.Category_Name</td>
                 <td>
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#updateTaskModal" onclick="setTaskForUpdate('@task.Task_ID', '@task.Task_Title.Replace("'", "")', '@task.Task_Desc.Replace("'", "")', '@task.Task_Deadline', '@task.Task_Priority', '@task.Task_Status', '@task.Category.Category_Name')">
+                    <button type="button" @completion_marker class="btn btn-primary" data-toggle="modal" data-target="#updateTaskModal" onclick="setTaskForUpdate('@task.Task_ID', '@task.Task_Title.Replace("'", "")', '@task.Task_Desc.Replace("'", "")', '@task.Task_Deadline', '@task.Task_Priority', '@task.Task_Status', '@task.Category.Category_Name')">
                         <script>
                             function setTaskForUpdate(taskId, title, description, deadline, priority, status, categoryName) {
                                 $('#updateTaskId').val(taskId);
@@ -50,11 +52,17 @@
                         Edit
                     </button>
                     @* <button type="button" class="btn btn-primary" onclick="setTaskForUpdate(@task.Task_ID, '@task.Task_Title', '@task.Task_Desc', '@task.Task_Deadline', '@task.Task_Priority', '@task.Task_Status')">Edit</button> *@
-                    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteTaskModal" onclick="setTaskForDelete()">
+                    <button type="button" @completion_marker class="btn btn-danger" data-toggle="modal" data-target="#deleteTaskModal" onclick="setTaskForDelete()">
                         <script>
                             function setTaskForDelete() { $('#deleteTaskId').val('@task.Task_ID'); }
                         </script>
                         Delete
+                    </button>
+                    <button type="button" @completion_marker class="btn btn-secondary" data-toggle="modal" data-target="#CompleteTaskModal" onclick="setTaskForCompletion()">
+                        <script>
+                            function setTaskForCompletion() { $('#CompleteTaskId').val('@task.Task_ID'); }
+                        </script>
+                        Mark as completed
                     </button>
                 </td>
             </tr>
@@ -190,6 +198,27 @@
                     <input type="hidden" id="deleteTaskId" name="Id">
                     <p>Are you sure you want to delete this task?</p>
                     <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Complete Task Modal -->
+<div class="modal fade" id="CompleteTaskModal" tabindex="-1" role="dialog" aria-labelledby="CompleteTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="CompleteTaskModalLabel">Complete Task</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="CompleteTaskForm" method="post" action="/Task/MarkAsCompleted">
+                    <input type="hidden" id="CompleteTaskId" name="Id">
+                    <p>Are you sure you want to mark this task as completed?</p>
+                    <button type="submit" class="btn btn-secondary">Mark as completed</button>
                 </form>
             </div>
         </div>

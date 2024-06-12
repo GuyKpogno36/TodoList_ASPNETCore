@@ -29,9 +29,6 @@ namespace Todo_List_ASPNETCore.Services
             }
         }
 
-        public async System.Threading.Tasks.Task SendNotificationsAsync(string email, string subject, string message)
-        {
-            _emailService.SendEmail(email, subject, message);
-        }
+        public async System.Threading.Tasks.Task SendNotificationsAsync(string email, string subject, string message) => _emailService.SendEmail(email, subject, message);
     }
 }

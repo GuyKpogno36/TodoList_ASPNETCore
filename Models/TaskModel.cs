@@ -23,4 +23,13 @@ namespace Todo_List_ASPNETCore.Models
         High
     }
 
+    public class DashboardModel
+    {
+        public List<TASK> PendingTasks { get; set; }
+        public List<TASK> CompletedTasks { get; set; }
+        public List<TASK> OverdueTasks { get; set; }
+        public List<TaskPriority> Priorities { get; set; }
+        public List<CATEGORY> Categories { get; set; }
+    }
+
 }

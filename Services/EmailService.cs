@@ -33,7 +33,14 @@ namespace Todo_List_ASPNETCore.Services
 
             mailMessage.To.Add(to);
 
-            smtpClient.Send(mailMessage);
+            try
+            {
+                smtpClient.Send(mailMessage);
+            }
+            catch (Exception e)
+            {
+                string mess = e.Message;
+            }
         }
     }
 

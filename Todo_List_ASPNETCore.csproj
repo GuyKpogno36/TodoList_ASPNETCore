@@ -32,11 +32,14 @@
 
   <ItemGroup>
     <Folder Include="Migrations\" />
-    <Folder Include="Controllers\" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="Views\Task\Index.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Views\Task\Dashboard.cshtml" />
   </ItemGroup>
 
 </Project>
